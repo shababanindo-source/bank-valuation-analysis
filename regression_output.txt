@@ -1,0 +1,870 @@
+       Saturday October 18 14:10:38 2025       Page 1
+
+                                                            ___ ____ ____ ____ ____(R)
+                                                           /__     /  ____/    /  ____/
+                                                          ___/   /   /___/   /   /___/
+                                                            Statistics/Data Analysis
+
+
+       ___ ____ ____ ____ ____ (R)
+      /__     /  ____/    /  ____/
+     ___/   /   /___/   /   /___/  15.0        Copyright 1985-2017 StataCorp LLC
+       Statistics/Data Analysis                StataCorp
+                                               4905 Lakeway Drive
+                                               College Station, Texas 77845 USA
+                                               800-STATA-PC        http://www.stata.com
+                                               979-696-4600        stata@stata.com
+                                               979-696-4601 (fax)
+
+     Single-user Stata perpetual license:
+            Serial number: 301506215585
+              Licensed to: www.Downloadly.ir
+                            Iran Will Defeat US
+
+     Notes:
+              1.   Unicode is supported; see help unicode_advice.
+
+ 1 . import excel "For Stata.xlsx"
+
+ 2 . ********************************************************************************
+
+ 3 .
+ 4 . * Research: Interaction Between Profitability, Risk, and Market Value
+
+ 5 .
+ 6 . * Dependent Variable: Net Asset Value (NAV)
+
+ 7 .
+ 8 . ********************************************************************************
+
+ 9   .
+10   .
+11   .
+12   . rename BankName                        bank
+
+13 .
+14 . rename Year                              year
+
+15 .
+16 . rename CapitalAdequacyRatio              car
+
+17 .
+18 . rename AdvanceDepositratio               adr
+
+19 .
+20 . rename NPLRate                           npl
+
+21 .
+22 . rename NetAssetValueNAV                  nav
+
+23 .
+24 . rename NetProfitAfterTaxAnnualized netprofit
+
+25 .
+26 . rename EPS12Month                        eps
+
+27 .
+28 . rename ROEAnnualized                     roe
+       Saturday October 18 14:10:38 2025                Page 2
+
+29 .
+30 . rename ROAAnnualized                              roa
+
+31   .
+32   .
+33   .
+34   . capture ssc install winsor2
+
+35 .
+36 . winsor2 roe npl nav, cuts(1 99) replace
+
+37   .
+38   .
+39   .
+40   . sum roe
+
+         Variable            Obs                Mean          Std. Dev.         Min        Max
+
+                 roe             98       6.207366            25.78458    -237.2837    21.8947
+
+41 .
+42 . gen roe_c = roe - r(mean)
+   (2 missing values generated)
+
+43 .
+44 . sum npl
+
+         Variable            Obs                Mean          Std. Dev.         Min        Max
+
+                 npl         100          10.57156            13.88062          1.1      79.64
+
+45 .
+46 . gen npl_c = npl - r(mean)
+
+47 .
+48 . gen int_c = roe_c * npl_c
+   (2 missing values generated)
+
+49   .
+50   .
+51   .
+52   . summ roe npl car nav roa
+
+         Variable            Obs                Mean          Std. Dev.         Min        Max
+
+                 roe          98          6.207366            25.78458    -237.2837    21.8947
+                 npl         100          10.57156            13.88062          1.1      79.64
+                 car         100           12.8632            4.076768            0      20.42
+                 nav         100          60.83578            88.04054     16.94229   409.8766
+                 roa         100             .6085            .4406294         -.72       1.73
+
+53 .
+54 . pwcorr roe npl car nav roa, sig
+
+                           roe            npl           car         nav        roa
+
+                 roe    1.0000
+
+
+                 npl   -0.5908         1.0000
+                        0.0000
+
+                 car    0.4539        -0.7098     1.0000
+                        0.0000         0.0000
+
+                 nav   -0.0956         0.3040    -0.5855         1.0000
+                        0.3493         0.0021     0.0000
+
+                 roa    0.3650        -0.7015     0.7590        -0.4345     1.0000
+                        0.0002         0.0000     0.0000         0.0000
+       Saturday October 18 14:10:38 2025      Page 3
+
+55   .
+56   .
+57   .
+58   . reg nav roe_c npl_c car, robust
+
+     Linear regression                                  Number of obs        =          98
+                                                        F(3, 94)             =        8.30
+                                                        Prob > F             =      0.0001
+                                                        R-squared            =      0.3837
+                                                        Root MSE             =      70.791
+
+
+                                   Robust
+              nav         Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+            roe_c     .5769785    .2316184       2.49   0.014     .1170949        1.036862
+            npl_c    -.8519092    1.421999      -0.60   0.551    -3.675321        1.971503
+              car    -16.34934    5.381362      -3.04   0.003    -27.03416       -5.664522
+            _cons     271.0666    73.31387       3.70   0.000     125.5002         416.633
+
+
+59 .
+60 . reg nav roe_c npl_c int_c car, robust
+
+     Linear regression                                  Number of obs        =          98
+                                                        F(4, 93)             =        6.30
+                                                        Prob > F             =      0.0002
+                                                        R-squared            =      0.4180
+                                                        Root MSE             =       69.16
+
+
+                                   Robust
+              nav         Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+            roe_c    -3.404762    1.889886      -1.80   0.075    -7.157701        .3481774
+            npl_c    -1.027394    1.203166      -0.85   0.395    -3.416643        1.361855
+            int_c     .0696895    .0325874       2.14   0.035     .0049774        .1344017
+              car    -13.68744    5.135898      -2.67   0.009    -23.88631       -3.488562
+            _cons      251.715     67.7447       3.72   0.000     117.1875        386.2426
+
+
+61 .
+62 . estat vif
+
+         Variable          VIF       1/VIF
+
+            roe_c        40.52    0.024680
+            int_c        35.72    0.027998
+            npl_c         2.49    0.401796
+              car         2.46    0.406156
+
+         Mean VIF        20.30
+
+63   .
+64   .
+65   .
+66   . reg nav c.roe##c.npl car, robust
+
+     Linear regression                                  Number of obs        =          98
+                                                        F(4, 93)             =        6.30
+                                                        Prob > F             =      0.0002
+                                                        R-squared            =      0.4180
+                                                        Root MSE             =       69.16
+     Saturday October 18 14:10:38 2025                Page 4
+
+
+                                          Robust
+              nav              Coef.     Std. Err.         t      P>|t|        [95% Conf. Interval]
+
+              roe          -4.141488     2.232442       -1.86     0.067       -8.574676        .2916989
+              npl          -1.459982       1.2008       -1.22     0.227       -3.844534        .9245693
+
+    c.roe#c.npl             .0696895     .0325874        2.14     0.035        .0049774        .1344017
+
+              car          -13.68744     5.135898       -2.67     0.009       -23.88631       -3.488562
+            _cons           288.2839     75.96744        3.79     0.000        137.4276        439.1402
+
+
+67 .
+68 . sum npl, detail
+
+                                       NPL Rate
+
+           Percentiles            Smallest
+    1%           1.65                  1.1
+    5%       2.796063                  2.2
+   10%       3.091219                 2.62            Obs                      100
+   25%            3.9                 2.63            Sum of Wgt.              100
+
+   50%              4.89                              Mean                10.57156
+                                   Largest            Std. Dev.           13.88062
+   75%       11.95936                54.97
+   90%          21.94                61.74            Variance            192.6717
+   95%         41.045                67.53            Skewness             3.02483
+   99%         73.585                79.64            Kurtosis            12.70051
+
+69 .
+70 . local p25 = r(p25)
+
+71 .
+72 . local p50 = r(p50)
+
+73 .
+74 . local p75 = r(p75)
+
+75 .
+76 . margins, dydx(roe) at(npl=(`p25' `p50' `p75'))
+
+   Average marginal effects                                       Number of obs           =          98
+   Model VCE    : Robust
+
+   Expression   : Linear prediction, predict()
+   dy/dx w.r.t. : roe
+
+   1._at             : npl                   =           3.9
+
+   2._at             : npl                   =          4.89
+
+   3._at             : npl                   =      11.95936
+
+
+                                       Delta-method
+                               dy/dx     Std. Err.         t      P>|t|        [95% Conf. Interval]
+
+   roe
+              _at
+               1           -3.869699     2.105994       -1.84     0.069       -8.051787        .3123881
+               2           -3.800707     2.073909       -1.83     0.070       -7.919078        .3176648
+               3           -3.308046      1.84497       -1.79     0.076       -6.971791        .3556986
+        Saturday October 18 14:10:38 2025     Page 5
+
+ 77 .
+ 78 . marginsplot, title("Marginal Effect of ROE on NAV at Different NPL Levels") ///
+
+        Variables that uniquely identify margins: npl
+      option / not allowed
+      r(198);
+
+ 79 .
+ 80 .     ytitle("Marginal Effect of ROE on NAV") xtitle("NPL Levels") name(marg_nav, replace)
+    command ytitle is unrecognized
+    r(199);
+
+ 81   .
+ 82   .
+ 83   .
+ 84   . sum npl
+
+          Variable          Obs        Mean      Std. Dev.     Min      Max
+
+                  npl       100    10.57156      13.88062      1.1    79.64
+
+ 85 .
+ 86 . gen high_npl = npl > r(mean)
+
+ 87 .
+ 88 . twoway (lfit nav roe if high_npl==1, lcolor(red)) ///
+    / / / is not a twoway plot type
+    r(198);
+
+ 89 .
+ 90 .        (lfit nav roe if high_npl==0, lcolor(blue)) ///
+    ( is not a valid command name
+    r(199);
+
+ 91 .
+ 92 .        (scatter nav roe if high_npl==1, mcolor(red%35)) ///
+    ( is not a valid command name
+    r(199);
+
+ 93 .
+ 94 .        (scatter nav roe if high_npl==0, mcolor(blue%35)), ///
+    ( is not a valid command name
+    r(199);
+
+ 95 .
+ 96 .        legend(order(1 "High NPL fit" 2 "Low NPL fit" 3 "High NPL" 4 "Low NPL")) ///
+    command legend is unrecognized
+    r(199);
+
+ 97 .
+ 98 .        title("ROE–NAV Relationship by NPL Level") ///
+    command title is unrecognized
+    r(199);
+
+ 99 .
+100 .        ytitle("Net Asset Value (NAV)") xtitle("Return on Equity (ROE)") name(intplot_nav, rep
+    command ytitle is unrecognized
+    r(199);
+
+101 .
+102 . graph export "ROE_NAV_Interaction.png", width(1400) replace
+    could not find Graph window
+    r(693);
+        Saturday October 18 14:10:38 2025           Page 6
+
+103   .
+104   .
+105   .
+106   . encode bank, gen(bank_id)
+
+107 .
+108 . capture noisily xtset         bank_id year
+           panel variable:          bank_id (strongly balanced)
+            time variable:          year, 2020 to 2024
+                    delta:          1 unit
+
+109   .
+110   . if _rc==0 {
+111   .
+112   .     xtreg nav roe_c npl_c int_c car, fe vce(robust)
+
+      Fixed-effects (within) regression                       Number of obs          =         98
+      Group variable: bank_id                                 Number of groups       =         20
+
+      R-sq:                                                   Obs per group:
+              within = 0.8402                                                  min =            3
+              between = 0.2965                                                 avg =          4.9
+              overall = 0.0202                                                 max =            5
+
+                                                              F(4,19)                =    7652.70
+      corr(u_i, Xb)     = -0.3157                             Prob > F               =     0.0000
+
+                                           (Std. Err. adjusted for 20 clusters in bank_id)
+
+                                         Robust
+                  nav        Coef.      Std. Err.        t    P>|t|       [95% Conf. Interval]
+
+                roe_c      .625578      .4418099       1.42   0.173      -.2991409       1.550297
+                npl_c     .1252204      .1255063       1.00   0.331      -.1374672       .3879081
+                int_c     .0002475      .0072747       0.03   0.973      -.0149785       .0154736
+                  car     .5607447      .7370654       0.76   0.456      -.9819508        2.10344
+                _cons     54.48733      9.039289       6.03   0.000       35.56789       73.40678
+
+              sigma_u    93.545079
+              sigma_e    7.0615683
+                  rho    .99433379      (fraction of variance due to u_i)
+
+113 .
+114 .          xtreg nav roe_c npl_c int_c car, re vce(robust)
+
+      Random-effects GLS regression                           Number of obs          =         98
+      Group variable: bank_id                                 Number of groups       =         20
+
+      R-sq:                                                   Obs per group:
+              within = 0.8397                                                  min =            3
+              between = 0.2678                                                 avg =          4.9
+              overall = 0.0142                                                 max =            5
+
+                                                              Wald chi2(4)           =   36937.20
+      corr(u_i, X)      = 0 (assumed)                         Prob > chi2            =     0.0000
+
+                                           (Std. Err. adjusted for 20 clusters in bank_id)
+
+                                         Robust
+                  nav        Coef.      Std. Err.        z    P>|z|       [95% Conf. Interval]
+
+                roe_c     .5859228      .4507515       1.30   0.194      -.2975339        1.46938
+                npl_c     .1168526      .1193253       0.98   0.327      -.1170208       .3507259
+                int_c     .0009596      .0074334       0.13   0.897      -.0136097       .0155288
+                  car      .417472      .5820618       0.72   0.473      -.7233482       1.558292
+                _cons     55.62059       18.9067       2.94   0.003       18.56413       92.67705
+
+              sigma_u    62.119669
+              sigma_e    7.0615683
+                  rho    .98724243      (fraction of variance due to u_i)
+        Saturday October 18 14:10:38 2025     Page 7
+
+115 .
+116 . }
+
+117   .
+118   .
+119   .
+120   . capture ssc install outreg2
+
+121 .
+122 . outreg2 using "NAV_Results.doc", replace dec(3) ctitle("Baseline OLS (robust)") ///
+    option / not allowed
+    r(198);
+
+123 .
+124 .     addtext(Dependent, NAV) keep(roe_c npl_c car)
+    command addtext is unrecognized
+    r(199);
+
+125 .
+126 . outreg2 using "NAV_Results.doc", append dec(3) ctitle("Interaction OLS (robust)") ///
+    option / not allowed
+    r(198);
+
+127 .
+128 .     addtext(Dependent, NAV) keep(roe_c npl_c int_c car)
+    command addtext is unrecognized
+    r(199);
+
+129 .
+130 . outreg2 using "NAV_Results.doc", append dec(3) ctitle("Factor Syntax OLS (robust)") ///
+    option / not allowed
+    r(198);
+
+131 .
+132 .     addtext(Dependent, NAV) keep(roe npl c.roe#c.npl car)
+    command addtext is unrecognized
+    r(199);
+
+133   .
+134   .
+135   .
+136   . display "=== ANALYSIS COMPLETE ==="
+      === ANALYSIS COMPLETE ===
+
+137 .
+138 . display "Results exported to NAV_Results.doc and ROE_NAV_Interaction.png"
+    Results exported to NAV_Results.doc and ROE_NAV_Interaction.png
+
+139 .
+140 . ********************************************************************************
+
+141 .
+142 . `
+    ` is not a valid command name
+    r(199);
+
+143 . ********************************************************************************
+
+144 .
+145 . * Year-wise NAV Models (2020–2025)
+        Saturday October 18 14:10:38 2025   Page 8
+
+146 .
+147 . * Assumes you already renamed: bank year nav roe npl car
+
+148 .
+149 . ********************************************************************************
+
+150   .
+151   .
+152   .
+153   . * (Optional) Panel declaration (helps with checks; not required for yearwise OLS)
+
+154 .
+155 . capture encode bank, gen(bank_id)
+
+156 .
+157 . capture xtset bank_id year
+
+158   .
+159   .
+160   .
+161   . * --- A) Create year-centered variables for interaction (per-year means) ---
+
+162 .
+163 . bys year: egen roe_mean_y = mean(roe)
+
+164 .
+165 . bys year: egen npl_mean_y = mean(npl)
+
+166 .
+167 . gen roe_c_y = roe - roe_mean_y
+    (2 missing values generated)
+
+168 .
+169 . gen npl_c_y = npl - npl_mean_y
+
+170 .
+171 . gen int_c_y = roe_c_y * npl_c_y
+    (2 missing values generated)
+
+172   .
+173   .
+174   .
+175   . * --- B) Run year-wise baseline OLS (NAV on ROE, NPL, CAR) ---
+
+176 .
+177 . levelsof year, local(years)
+    2020 2021 2022 2023 2024
+
+178 .
+179 . display "================ YEAR-WISE BASELINE (robust) ================"
+    ================ YEAR-WISE BASELINE (robust) ================
+
+180 .
+181 . foreach y of local years {
+      2.
+182 .     display "----- Year: `y' -----"
+      3.
+183 .     reg nav roe npl car if year == `y', robust
+      4.
+184 . }
+    ----- Year: 2020 -----
+
+      Linear regression                                Number of obs     =        20
+                                                       F(3, 16)          =      2.40
+                                                       Prob > F          =    0.1058
+                                                       R-squared         =    0.4930
+                                                       Root MSE          =    77.481
+  Saturday October 18 14:10:38 2025        Page 9
+
+
+                                Robust
+         nav           Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+         roe      -4.8235      6.158743      -0.78   0.445    -17.87945       8.232452
+         npl     1.869813       7.33678       0.25   0.802    -13.68347       17.42309
+         car    -17.84882      16.10196      -1.11   0.284    -51.98345        16.2858
+       _cons     330.7316      286.2872       1.16   0.265    -276.1701       937.6334
+
+----- Year: 2021 -----
+
+Linear regression                                    Number of obs        =         20
+                                                     F(3, 16)             =       3.35
+                                                     Prob > F             =     0.0453
+                                                     R-squared            =     0.6353
+                                                     Root MSE             =     60.716
+
+
+                                Robust
+         nav           Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+         roe    -2.569864      3.350323      -0.77   0.454    -9.672232       4.532504
+         npl     7.428314      7.177582       1.03   0.316    -7.787481       22.64411
+         car    -8.438306      9.415751      -0.90   0.383     -28.3988       11.52219
+       _cons      149.519       186.827       0.80   0.435    -246.5365       545.5746
+
+----- Year: 2022 -----
+
+Linear regression                                    Number of obs        =         20
+                                                     F(3, 16)             =       5.80
+                                                     Prob > F             =     0.0070
+                                                     R-squared            =     0.7170
+                                                     Root MSE             =     51.345
+
+
+                                Robust
+         nav           Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+         roe    -.0317793      2.960585      -0.01   0.992    -6.307939        6.24438
+         npl     9.853317      4.042776       2.44   0.027     1.283014       18.42362
+         car    -5.010282      6.461838      -0.78   0.449    -18.70877       8.688204
+       _cons     54.71343       117.439       0.47   0.648    -194.2462       303.6731
+
+----- Year: 2023 -----
+
+Linear regression                                    Number of obs        =         19
+                                                     F(3, 15)             =       8.24
+                                                     Prob > F             =     0.0018
+                                                     R-squared            =     0.6787
+                                                     Root MSE             =     57.277
+
+
+                                Robust
+         nav           Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+         roe        2.962241    2.66555       1.11   0.284    -2.719245       8.643726
+         npl        7.707947   3.866509       1.99   0.065    -.5333226       15.94922
+         car        -7.23965   9.924711      -0.73   0.477    -28.39367       13.91437
+       _cons        67.27698   182.6569       0.37   0.718    -322.0469       456.6009
+
+----- Year: 2024 -----
+
+Linear regression                                    Number of obs        =         19
+                                                     F(3, 15)             =       3.15
+                                                     Prob > F             =     0.0560
+                                                     R-squared            =     0.2358
+                                                     Root MSE             =     74.695
+        Saturday October 18 14:10:38 2025     Page 10
+
+
+                                   Robust
+               nav        Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+               roe     .2438876   .3270976       0.75   0.467    -.4533046        .9410797
+               npl    -.4880067   1.042145      -0.47   0.646    -2.709285        1.733272
+               car    -8.344505   6.549344      -1.27   0.222     -22.3041        5.615092
+             _cons      154.827   98.36037       1.57   0.136    -54.82313        364.4772
+
+
+185   .
+186   .
+187   .
+188   . * --- C) Run year-wise INTERACTION OLS (NAV on ROE_c, NPL_c, ROE×NPL, CAR) ---
+
+189 .
+190 . display "================ YEAR-WISE INTERACTION (robust) ================"
+    ================ YEAR-WISE INTERACTION (robust) ================
+
+191 .
+192 . foreach y of local years {
+      2.
+193 .     display "----- Year: `y' -----"
+      3.
+194 .     reg nav roe_c_y npl_c_y int_c_y car if year == `y', robust
+      4.
+195 . }
+    ----- Year: 2020 -----
+
+      Linear regression                                 Number of obs        =          20
+                                                        F(4, 15)             =        4.16
+                                                        Prob > F             =      0.0184
+                                                        R-squared            =      0.7554
+                                                        Root MSE             =      55.583
+
+
+                                   Robust
+               nav        Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+           roe_c_y    -13.76045   5.057657      -2.72   0.016    -24.54059       -2.980313
+           npl_c_y    -26.18301   9.109647      -2.87   0.012    -45.59976       -6.766258
+           int_c_y    -4.093924   1.066232      -3.84   0.002    -6.366543       -1.821304
+               car    -29.39067   15.32034      -1.92   0.074    -62.04519        3.263859
+             _cons     391.8793   201.1863       1.95   0.070    -36.93921        820.6977
+
+      ----- Year: 2021 -----
+
+      Linear regression                                 Number of obs        =          20
+                                                        F(4, 15)             =        4.79
+                                                        Prob > F             =      0.0108
+                                                        R-squared            =      0.7043
+                                                        Root MSE             =      56.461
+
+
+                                   Robust
+               nav        Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+           roe_c_y    -6.602797   4.346551      -1.52   0.150    -15.86725        2.661658
+           npl_c_y     -5.67502   10.41724      -0.54   0.594    -27.87885        16.52881
+           int_c_y    -2.770025   1.894458      -1.46   0.164    -6.807966        1.267916
+               car     -6.34838   8.973271      -0.71   0.490    -25.47445        12.77769
+             _cons     105.5165   120.5371       0.88   0.395    -151.4023        362.4353
+
+      ----- Year: 2022 -----
+
+      Linear regression                                 Number of obs        =          20
+                                                        F(4, 15)             =       27.07
+                                                        Prob > F             =      0.0000
+                                                        R-squared            =      0.9160
+                                                        Root MSE             =      28.894
+        Saturday October 18 14:10:38 2025       Page 11
+
+
+                                     Robust
+               nav          Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+           roe_c_y    -10.07091      3.20185      -3.15   0.007    -16.89549       -3.246332
+           npl_c_y    -11.02457     6.734345      -1.64   0.122    -25.37848        3.329352
+           int_c_y    -3.845358     .9375481      -4.10   0.001    -5.843694       -1.847021
+               car     3.403466     1.872688       1.82   0.089    -.5880741        7.395007
+             _cons    -60.94328     30.97652      -1.97   0.068    -126.9682        5.081607
+
+      ----- Year: 2023 -----
+
+      Linear regression                                   Number of obs        =          19
+                                                          F(4, 14)             =        5.54
+                                                          Prob > F             =      0.0069
+                                                          R-squared            =      0.6923
+                                                          Root MSE             =      58.014
+
+
+                                     Robust
+               nav          Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+           roe_c_y     -1.01849     5.467351      -0.19   0.855    -12.74479        10.70781
+           npl_c_y     1.627869     7.662686       0.21   0.835    -14.80696         18.0627
+           int_c_y    -.6871253     .9535311      -0.72   0.483    -2.732246        1.357995
+               car    -7.853532     10.10568      -0.78   0.450    -29.52806        13.82099
+             _cons     150.8661     158.7568       0.95   0.358    -189.6334        491.3656
+
+      ----- Year: 2024 -----
+
+      Linear regression                                   Number of obs        =          19
+                                                          F(4, 14)             =        2.25
+                                                          Prob > F             =      0.1163
+                                                          R-squared            =      0.2425
+                                                          Root MSE             =      76.976
+
+
+                                     Robust
+               nav          Coef.   Std. Err.        t    P>|t|     [95% Conf. Interval]
+
+           roe_c_y    -.5824156      1.57771      -0.37   0.718    -3.966268        2.801437
+           npl_c_y    -.7866606     .9028309      -0.87   0.398     -2.72304        1.149719
+           int_c_y     .0184251     .0318856       0.58   0.573    -.0499626        .0868128
+               car    -7.526104     7.327699      -1.03   0.322    -23.24246        8.190247
+             _cons     147.3108     76.73731       1.92   0.076    -17.27441        311.8959
+
+
+196   .
+197   .
+198   .
+199   . * --- D) Export neatly to Word using esttab (install once if needed) ---
+
+200 .
+201 . capture ssc install estout
+
+202   .
+203   .
+204   .
+205   . * Baseline export
+
+206 .
+        Saturday October 18 14:10:39 2025   Page 12
+
+207 . eststo clear
+
+208 .
+209 . foreach y of local years {
+      2.
+210 .     quietly eststo base_`y': reg nav roe npl car if year == `y', robust
+      3.
+211 . }
+
+212 .
+213 . esttab base_* using "Yearwise_NAV_Baseline.doc", replace ///
+    option / not allowed
+    r(198);
+
+214 .
+215 .     title("Year-wise NAV Regressions: Baseline (robust)") ///
+    command title is unrecognized
+    r(199);
+
+216 .
+217 .     se b(3) se(3) r2 ar2 nostar
+    '(' found where on or off expected
+    r(198);
+
+218   .
+219   .
+220   .
+221   . * Interaction export
+
+222 .
+223 . eststo clear
+
+224 .
+225 . foreach y of local years {
+      2.
+226 .     quietly eststo int_`y': reg nav roe_c_y npl_c_y int_c_y car if year == `y', robust
+      3.
+227 . }
+
+228 .
+229 . esttab int_* using "Yearwise_NAV_Interaction.doc", replace ///
+    option / not allowed
+    r(198);
+
+230 .
+231 .     title("Year-wise NAV Regressions: Interaction (robust)") ///
+    command title is unrecognized
+    r(199);
+
+232 .
+233 .     se b(3) se(3) r2 ar2 nostar
+    '(' found where on or off expected
+    r(198);
+
+234   .
+235   .
+236   .
+237   . * --- E) Optional: also save as CSV-friendly tables via outreg2 ---
+
+238 .
+239 . capture ssc install outreg2
+        Saturday October 18 14:10:39 2025   Page 13
+
+240   .
+241   .
+242   .
+243   . * Baseline to one DOC
+
+244 .
+245 . outreg2 using "Yearwise_NAV_Baseline_Summary.doc", replace dec(3) ctitle("Baseline: NAV = ROE
+    Yearwise_NAV_Baseline_Summary.doc
+    dir : seeout
+
+246 .
+247 . foreach y of local years {
+      2.
+248 .     outreg2 using "Yearwise_NAV_Baseline_Summary.doc", append dec(3) ///
+      3.
+249 .         ctitle("Year `y'") addstat(Year, `y') ///
+      4.
+250 .         keep(roe npl car) ///
+      5.
+251 .         reg(nav roe npl car) if year==`y', robust
+      6.
+252 . }
+    option / not allowed
+    r(198);
+
+253   .
+254   .
+255   .
+256   . * Interaction to one DOC
+
+257 .
+258 . outreg2 using "Yearwise_NAV_Interaction_Summary.doc", replace dec(3) ctitle("Interaction: NAV
+    Yearwise_NAV_Interaction_Summary.doc
+    dir : seeout
+
+259 .
+260 . foreach y of local years {
+      2.
+261 .     outreg2 using "Yearwise_NAV_Interaction_Summary.doc", append dec(3) ///
+      3.
+262 .         ctitle("Year `y'") addstat(Year, `y') ///
+      4.
+263 .         keep(roe_c_y npl_c_y int_c_y car) ///
+      5.
+264 .         reg(nav roe_c_y npl_c_y int_c_y car) if year==`y', robust
+      6.
+265 . }
+    option / not allowed
+    r(198);
+
+266   .
+267   .
+268   .
+269   . display "=== DONE: Created Yearwise_NAV_Baseline.doc, Yearwise_NAV_Interaction.doc, and summa
+      === DONE: Created Yearwise_NAV_Baseline.doc, Yearwise_NAV_Interaction.doc, and summary docs ===
+
+270 . save "stata files (NAV) modif
+    file stata files (NAV) modified
+
+271 . putexcel set "Results.xlsx",
+
+272 .
+
